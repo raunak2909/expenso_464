@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:expenso_464/data/models/user_model.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DbHelper {
@@ -73,9 +74,9 @@ class DbHelper {
   Future<int> registerUser({required UserModel newUser}) async {
     var db = await initDB();
     bool emailCheck = await checkIfEmailAlreadyExists(email: newUser.email);
-    if(!emailCheck){
+    if (!emailCheck) {
       int rowsEffected = await db.insert(TABLE_USER, newUser.toMap());
-      return rowsEffected > 0 ? 1 : 2 ;
+      return rowsEffected > 0 ? 1 : 2;
     } else {
       return 3;
     }
@@ -84,7 +85,28 @@ class DbHelper {
   Future<bool> checkIfEmailAlreadyExists({required String email}) async {
     var db = await initDB();
 
-    List<Map<String, dynamic>> mData = await db.query(TABLE_USER, where: "$COLUMN_USER_EMAIL = ?", whereArgs: [email]);
+    List<Map<String, dynamic>> mData = await db.query(
+      TABLE_USER,
+      where: "$COLUMN_USER_EMAIL = ?",
+      whereArgs: [email],
+    );
+
+    return mData.isNotEmpty;
+  }
+
+  Future<bool> authenticateUser({required String email, required String pass}) async{
+    var db = await initDB();
+
+    List<Map<String, dynamic>> mData = await db.query(
+      TABLE_USER,
+      where: "$COLUMN_USER_EMAIL = ? and $COLUMN_USER_PASS = ?",
+      whereArgs: [email, pass],
+    );
+
+    if(mData.isNotEmpty){
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setInt("uid", mData[0][COLUMN_USER_ID]);
+    }
 
     return mData.isNotEmpty;
   }

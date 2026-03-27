@@ -1,6 +1,7 @@
 import 'package:expenso_464/ui/on_boarding/register/register_page.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../ui/on_boarding/login/login_page.dart';
 import '../../ui/splash/splash_page.dart';
 
 class AppRoutes{
@@ -13,6 +14,7 @@ class AppRoutes{
   static Map<String, WidgetBuilder> mRoutes = {
     splash: (context) => const SplashPage(),
     register: (context) => RegisterPage(),
+    login: (context) => LoginPage(),
   };
 
 }
