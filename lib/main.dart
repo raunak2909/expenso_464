@@ -1,15 +1,16 @@
 import 'package:expenso_464/data/helper/db_helper.dart';
 import 'package:expenso_464/domain/constants/app_routes.dart';
+import 'package:expenso_464/ui/dashboard/bloc/expense_bloc.dart';
 import 'package:expenso_464/ui/on_boarding/bloc/user_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   runApp(
-    BlocProvider(
-      create: (context) => UserBloc(dbHelper: DbHelper.getInstance()),
-      child: const MyApp(),
-    ),
+    MultiBlocProvider(providers: [
+      BlocProvider(create: (context) => UserBloc(dbHelper: DbHelper.getInstance()),),
+      BlocProvider(create: (context) => ExpenseBloc(dbHelper: DbHelper.getInstance()),),
+    ], child: MyApp())
   );
 }
 

@@ -12,6 +12,7 @@ class LoginPage extends StatelessWidget {
 
   bool isLoading = false;
   bool isPasswordVisible = false;
+  bool isLogin = true;
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -115,19 +116,75 @@ class LoginPage extends StatelessWidget {
               SizedBox(height: 11),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pinkAccent.shade100,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: () {
-                    if (formKey.currentState!.validate()) {}
+                child: BlocConsumer<UserBloc, UserState>(
+                  buildWhen: (_, _){
+                    return isLogin;
                   },
-                  child: Text('Login'),
+                  listenWhen: (_, _){
+                    return isLogin;
+                  },
+                  listener: (context, state) {
+                    if (state is UserLoadingState) {
+                      isLoading = true;
+                    }
+
+                    if (state is UserFailureState) {
+                      isLoading = false;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.errorMsg),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+
+                    if (state is UserSuccessState) {
+                      isLoading = false;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("User Logged-in successfully!!"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+                    }
+                  },
+                  builder: (context, state) {
+                    return ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pinkAccent.shade100,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        isLogin= true;
+                        if (formKey.currentState!.validate()) {
+                          context.read<UserBloc>().add(
+                            LoginUserEvent(
+                              email: emailController.text,
+                              pass: passwordController.text,
+                            ),
+                          );
+                        }
+                      },
+                      child: isLoading ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                          SizedBox(
+                            width: 11,
+                          ),
+                          Text("Authenticating..")
+                        ],
+                      ) : Text('Login'),
+                    );
+                  },
                 ),
               ),
               InkWell(
                 onTap: () {
+                  isLogin = false;
                   Navigator.pushNamed(context, AppRoutes.register);
                 },
                 child: SizedBox(

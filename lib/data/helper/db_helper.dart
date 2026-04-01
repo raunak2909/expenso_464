@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:expenso_464/data/models/expense_model.dart';
 import 'package:expenso_464/data/models/user_model.dart';
+import 'package:expenso_464/domain/constants/app_constants.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -94,7 +96,10 @@ class DbHelper {
     return mData.isNotEmpty;
   }
 
-  Future<bool> authenticateUser({required String email, required String pass}) async{
+  Future<bool> authenticateUser({
+    required String email,
+    required String pass,
+  }) async {
     var db = await initDB();
 
     List<Map<String, dynamic>> mData = await db.query(
@@ -103,11 +108,42 @@ class DbHelper {
       whereArgs: [email, pass],
     );
 
-    if(mData.isNotEmpty){
+    if (mData.isNotEmpty) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setInt("uid", mData[0][COLUMN_USER_ID]);
+      prefs.setInt(AppConstants.PREF_KEY_UID, mData[0][COLUMN_USER_ID]);
     }
 
     return mData.isNotEmpty;
+  }
+
+  ///expense table queries
+  Future<bool> addExpense({required ExpenseModel newExpense}) async {
+    Database db = await initDB();
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int uid = prefs.getInt(AppConstants.PREF_KEY_UID) ?? 0;
+    newExpense.uId = uid;
+
+    int rowsEffected = await db.insert(TABLE_EXPENSE, newExpense.toMap());
+    return rowsEffected > 0;
+  }
+
+  Future<List<ExpenseModel>> fetchAllExpenses() async {
+    Database db = await initDB();
+    List<ExpenseModel> mExp = [];
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int uid = prefs.getInt(AppConstants.PREF_KEY_UID) ?? 0;
+    List<Map<String, dynamic>> mData = await db.query(
+      TABLE_EXPENSE,
+      where: "$COLUMN_USER_ID = ?",
+      whereArgs: ["$uid"],
+    );
+
+    for (Map<String, dynamic> eachData in mData) {
+      mExp.add(ExpenseModel.fromMap(eachData));
+    }
+
+    return mExp;
   }
 }

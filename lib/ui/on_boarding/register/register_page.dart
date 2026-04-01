@@ -256,6 +256,7 @@ class RegisterPage extends StatelessWidget {
                           backgroundColor: Colors.green,
                         ),
                       );
+                      Navigator.pop(context);
                     }
                   },
                   builder: (context, state) {
