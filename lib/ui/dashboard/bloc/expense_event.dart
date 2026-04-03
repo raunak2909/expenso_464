@@ -7,7 +7,7 @@ class AddExpenseEvent extends ExpenseEvent{
   AddExpenseEvent(this.newExp);
 }
 
-class FetchAllExpensesEvent extends ExpenseEvent{}
+class FetchInitialExpensesEvent extends ExpenseEvent{}
 
 ///update
 ///delete

@@ -1,6 +1,9 @@
 import 'package:expenso_464/ui/add_expense/add_expense_page.dart';
+import 'package:expenso_464/ui/dashboard/bloc/expense_bloc.dart';
+import 'package:expenso_464/ui/dashboard/bloc/expense_event.dart';
 import 'package:expenso_464/ui/dashboard/nav_pages/noti_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/constants/app_routes.dart';
 import 'nav_pages/home_page.dart';
@@ -22,6 +25,12 @@ class _DashboardPageState extends State<DashboardPage> {
     NotificationNavPage(),
     ProfileNavPage(),
 ];
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<ExpenseBloc>().add(FetchInitialExpensesEvent());
+  }
 
   @override
   Widget build(BuildContext context) {

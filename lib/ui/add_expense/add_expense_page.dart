@@ -2,6 +2,7 @@ import 'package:expenso_464/data/models/expense_model.dart';
 import 'package:expenso_464/domain/constants/app_constants.dart';
 import 'package:expenso_464/ui/dashboard/bloc/expense_bloc.dart';
 import 'package:expenso_464/ui/dashboard/bloc/expense_event.dart';
+import 'package:expenso_464/ui/dashboard/bloc/expense_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,6 +21,7 @@ class AddExpensePage extends StatelessWidget {
   ///default
   DateTime? selectedDateTime;
 
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -249,43 +251,75 @@ class AddExpensePage extends StatelessWidget {
               },
             ),
             SizedBox(height: 11),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (selectedCatIndex >= 0) {
-                    context.read<ExpenseBloc>().add(
-                      AddExpenseEvent(
-                        ExpenseModel(
-                          uId: 0,
-                          title: titleController.text,
-                          remark: remarkController.text,
-                          type: selectedExpenseType == "Debit" ? 0 : 1,
-                          catId: AppConstants.mCat[selectedCatIndex].id,
-                          createdAt: (selectedDateTime ?? DateTime.now()).millisecondsSinceEpoch,
-                          amt: double.parse(amountController.text),
-                        ),
+            BlocConsumer<ExpenseBloc, ExpenseState>(
+              listener: (_, state){
+
+                if(state is ExpenseLoadingState){
+                  isLoading = true;
+                }
+
+                if(state is ExpenseErrorState){
+                  isLoading = false;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.errorMsg),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+
+                if(state is ExpenseLoadedState){
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Expense added successfully!!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  Navigator.pop(context);
+                }
+
+
+              },
+              builder: (context, state) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (selectedCatIndex >= 0) {
+                        context.read<ExpenseBloc>().add(
+                          AddExpenseEvent(
+                            ExpenseModel(
+                              uId: 0,
+                              title: titleController.text,
+                              remark: remarkController.text,
+                              type: selectedExpenseType == "Debit" ? 0 : 1,
+                              catId: AppConstants.mCat[selectedCatIndex].id,
+                              createdAt: (selectedDateTime ?? DateTime.now()).millisecondsSinceEpoch,
+                              amt: double.parse(amountController.text),
+                            ),
+                          ),
+                        );
+                      }
+                      else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Please select a category"),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(21),
                       ),
-                    );
-                  }
-                  else{
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Please select a category"),
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(21),
+                      fixedSize: Size(double.infinity, 55),
+                      backgroundColor: Colors.pink.shade200,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text('Add Expense'),
                   ),
-                  fixedSize: Size(double.infinity, 55),
-                  backgroundColor: Colors.pink.shade200,
-                  foregroundColor: Colors.white,
-                ),
-                child: Text('Add Expense'),
-              ),
+                );
+              }
             ),
           ],
         ),
