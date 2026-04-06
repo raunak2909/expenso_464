@@ -116,6 +116,16 @@ class DbHelper {
     return mData.isNotEmpty;
   }
 
+  Future<UserModel> getUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int uid = prefs.getInt(AppConstants.PREF_KEY_UID) ?? 0;
+
+    var db = await initDB();
+    List<Map<String, dynamic>> data = await db.query(TABLE_USER, where: "$COLUMN_USER_ID = ?", whereArgs: ["$uid"]);
+
+    return UserModel.fromMap(data[0]);
+  }
+
   ///expense table queries
   Future<bool> addExpense({required ExpenseModel newExpense}) async {
     Database db = await initDB();
@@ -146,5 +156,4 @@ class DbHelper {
 
     return mExp;
   }
-
 }

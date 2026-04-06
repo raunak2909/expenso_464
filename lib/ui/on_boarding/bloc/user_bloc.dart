@@ -3,6 +3,8 @@ import 'package:expenso_464/ui/on_boarding/bloc/user_event.dart';
 import 'package:expenso_464/ui/on_boarding/bloc/user_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../data/models/user_model.dart';
+
 class UserBloc extends Bloc<UserEvent, UserState> {
   DbHelper dbHelper;
 
@@ -34,6 +36,15 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         emit(UserFailureState(errorMsg: "Invalid credentials!!"));
       }
 
+
+    });
+
+    on<GetUserEvent>((event, emit) async{
+      emit(UserLoadingState());
+
+      UserModel user = await dbHelper.getUser();
+
+      emit(UserSuccessState(user: user));
 
     });
   }
